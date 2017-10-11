@@ -11,7 +11,7 @@ export default function jsonToRuby(json, indent = "") {
 	} else if (Array.isArray(json)) {
 		let ret = "[\n";
 		json.forEach((element) => {
-			ret += indent + "  ";
+			ret += indent + "    ";
 			ret += jsonToRuby(element, indent + "  ");
 			ret += ",\n";
 		});
@@ -21,7 +21,7 @@ export default function jsonToRuby(json, indent = "") {
 	} else if (type == "object") {
 		let ret = "{\n";
 		for (var key in json) {
-			ret += indent + "  ";
+			ret += indent + "    ";
 			ret += jsonToRuby(key);
 			ret += " => ";
 			ret += jsonToRuby(json[key], indent + "  ");

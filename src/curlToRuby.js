@@ -99,17 +99,17 @@ export default function curlToRuby(curl) {
 		var ruby = "";
 		ruby += 'response = Typhoeus::Request.new(\n'
 
-		ruby += '\t"' + rubyEsc(req.url) + '",\n';
+		ruby += `  "` + rubyEsc(req.url) + '",\n';
 
 		if (httpMethods[req.method]) {
-			ruby += '\tmethod: '+httpMethods[req.method]+',\n';
+			ruby += `  method: `+httpMethods[req.method]+',\n';
 		} else {
-			ruby += '\tmethod: :get,\n';
+			ruby += `  method: :get,\n`;
 		}
 
 		// set basic auth
 		if (req.basicauth) {
-			ruby += '\tuserpwd: "'+rubyEsc(req.basicauth.user)+':'+rubyEsc(req.basicauth.pass)+'",\n';
+			ruby += `  'userpwd: "'`+rubyEsc(req.basicauth.user)+':'+rubyEsc(req.basicauth.pass)+'",\n';
 		}
 
 		// if (headers["Content-Type"]) {
@@ -119,11 +119,11 @@ export default function curlToRuby(curl) {
 
 		// set headers
 		if (headers) {
-			ruby += '\theaders: {\n';
+			ruby += `  headers: {\n`;
 			for (var name in headers) {
-				ruby += '\t\t"'+rubyEsc(name)+'" => "'+rubyEsc(headers[name])+'",\n';
+				ruby += `    "`+rubyEsc(name)+'" => "'+rubyEsc(headers[name])+'",\n';
 			}
-			ruby += '\t},\n'
+			ruby += `  },\n`;
 		}
 
 
@@ -140,23 +140,23 @@ export default function curlToRuby(curl) {
 			if (isJson(req.data.ascii)) {
 				let json = JSON.parse(req.data.ascii);
 				prelude += "require 'json'\n";
-				ruby += "request.body = JSON.dump(" + jsonToRuby(json) + ")\n";
+				ruby += `  body: JSON.dump(` + jsonToRuby(json) + "),\n";
 			} else if (formUrlEncodedRegex.test(req.data.ascii)) {
 				let formData = queryString.parse(req.data.ascii);
-				ruby += "request.set_form_data(\n";
+				ruby += `  params: {\n`;
 				for(var name in formData) {
 					let value = formData[name];
-					ruby += `  "${rubyEsc(name)}" => "${rubyEsc(value)}",\n`
+					ruby += `    "${rubyEsc(name)}" => "${rubyEsc(value)}",\n`;
 				}
-				ruby += ")\n";
+				ruby += "  }\n";
 			} else {
-				ruby += 'request.body = "' + rubyEsc(req.data.ascii) + '"\n';
+				ruby += `  body: "` + rubyEsc(req.data.ascii) + '"\n';
 			}
 		}
 
 		if (req.data.files && req.data.files.length > 0) {
 			if (!req.data.ascii) {
-				ruby += 'request.body = ""\n';
+				ruby += `  body = ""\n`;
 			}
 
 			for (var i = 0; i < req.data.files.length; i++) {
@@ -164,19 +164,20 @@ export default function curlToRuby(curl) {
 			}
 		}
 
-		ruby += '\n'
-		ruby += 'req_options = {\n'
-		ruby += '  use_ssl: uri.scheme == "https",\n'
-		if (req.insecure) {
-		prelude += "require 'openssl'\n"
-		ruby += '  verify_mode: OpenSSL::SSL::VERIFY_NONE,\n'
-		}
-		ruby += '}\n'
+		// ruby += '\n'
+		// ruby += 'req_options = {\n'
+		// ruby += '  use_ssl: uri.scheme == "https",\n'
+		// if (req.insecure) {
+		// prelude += "require 'openssl'\n"
+		// ruby += '  verify_mode: OpenSSL::SSL::VERIFY_NONE,\n'
+		// }
+		// ruby += '}\n'
 
-		ruby += '\n'
-		ruby += 'response = Net::HTTP.start(uri.hostname, uri.port, req_options) do |http|\n'
-		ruby += '  http.request(request)\n'
-		ruby += 'end\n'
+		// ruby += '\n'
+		// ruby += 'response = Net::HTTP.start(uri.hostname, uri.port, req_options) do |http|\n'
+		// ruby += '  http.request(request)\n'
+		// ruby += 'end\n'
+		ruby += ').run'
 
 		return prelude + "\n" + ruby + coda;
 	}
